@@ -1,2 +1,0 @@
-# kuaiyidian
-kao2
