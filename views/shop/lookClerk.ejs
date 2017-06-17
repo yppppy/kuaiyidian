@@ -1,0 +1,35 @@
+
+    <% include ./head%>
+    <body>
+        <div class="row" id="row">
+          <div class="col-sm-2"></div>
+          <div class="col-sm-8 headStyle">
+<table class="table table-hover" align="center" >
+  <caption>店员列表</caption>
+  <thead>
+    <tr>
+      <th>角色名称</th>
+      <th>操作</th>
+    </tr>
+  </thead>
+  <tbody>
+  	<% rs.forEach(function(item){ %>
+  	<%
+  		if(item.role>0){
+  	%>
+    <tr>
+      <td><%-item.nicheng%></td>
+      <td>
+      	<a href='#'>修改</a>&nbsp;
+      	<a href='#'>删除</a>
+      </td>
+    </tr>
+    <% }}) %>
+  </tbody>
+</table>
+           
+            </div>
+        <div class="col-sm-2"></div>
+        </div>
+</body>
+</html>

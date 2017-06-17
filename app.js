@@ -9,6 +9,7 @@ const logger = require('koa-logger')
 const index = require('./routes/index')
 const users = require('./routes/users')
 const admin = require('./routes/admin')
+const shop = require('./routes/shop')
 var session = require('koa-generic-session');
 
 
@@ -39,9 +40,25 @@ app.use(async (ctx, next) => {
 //session
 app.keys = ['my secret key'];
 app.use(session());
-
+//-------------------------拦截器---------------------------------------
+var openPage = ['/','/admin/login','/shop/login'];
+app.use(async (ctx, next) => { 
+    var url = ctx.originalUrl;
+    console.log('url='+url);
+    url = (url.split('?'))[0];
+    if(openPage.indexOf(url)>-1){
+    	await next();
+    }else{
+    	if(ctx.session.loginbean){
+	  		await next();
+	  	}else{
+	  		ctx.redirect('/');
+	  	}
+    }
+});
 // routes
 app.use(index.routes(), index.allowedMethods())
 app.use(users.routes(), users.allowedMethods())
 app.use(admin.routes(), admin.allowedMethods())
+app.use(shop.routes(), shop.allowedMethods())
 module.exports = app
