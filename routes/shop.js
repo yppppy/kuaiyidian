@@ -18,7 +18,10 @@ router.get('/', async (ctx, next) => {
 
 
 router.post('/login', async (ctx, next) => {
-	
+      
+	 // console.log(ctx.request.body.email);
+	 // console.log(ctx.request.body.pwd);
+	 // ctx.body="hello";
   let rs= await shopUser.findOne({where:{email:ctx.request.body.email,pwd:ctx.request.body.pwd}});
 		console.log(rs);
 		if(rs!=null){
@@ -35,9 +38,6 @@ router.post('/login', async (ctx, next) => {
           }else if(loginbean.shoprole==2){
 
       }
-
-
-
 				}else{
 		
 			ctx.body="email/密码错误！"
@@ -45,6 +45,23 @@ router.post('/login', async (ctx, next) => {
 	});
 
 
+router.post('/mobileLogin', async function (ctx, next) {
+      console.log("HHHHHHHHHHHHH");
+      let rs = await shopUser.findOne({where:{email:ctx.request.body.email,pwd:ctx.request.body.pwd}});
+      if(rs){
+          let loginbean = new Object();
+      loginbean.id = rs.id;
+      loginbean.nicheng = rs.nicheng;
+      loginbean.shoprole = rs.role;
+      loginbean.shopid = rs.shopid;
+      ctx.session.loginbean=loginbean;
+      ctx.body=1;
+      //ctx.redirect('./');
+      }else{
+          ctx.body=0;
+      }
+  
+})
 
 
 
@@ -151,10 +168,11 @@ router.post('/addMenu', async function (ctx, next) {
 
 router.get('/lookMenu', async function (ctx, next) {
   let loginbean = ctx.session.loginbean;
+console.log("DDDDDDDDDD");
   if(typeof(loginbean.shoprole)!='undefined'&&loginbean.shoprole==0){
-  	  let sql="select * from childmenus as c,menus as m  where c.shopid=? and m.id=?";
+  	  let sql="select * from childmenus as c,menus as m  where c.shopid=? and m.id=? and c.typeid=m.id";
 	  let rs = await sequelize.query(sql,{replacements: [loginbean.shopid,ctx.query.id],type: sequelize.QueryTypes.QUERY});
-	  await ctx.render('shop/childmenu', {rs:rs[0],typename:ctx.query.name,typeid:ctx.query.id});
+	  await ctx.render('shop/childmenu', {rs:rs[0],typeid:ctx.query.id});
   }else{
   	ctx.redirect('/');
   }
@@ -196,9 +214,10 @@ router.post('/addChildMenu', async (ctx, next) => {
     await   MenuModel.update({num:sequelize.literal('num+1')},{where:{'shopid':loginbean.shopid,id:fields.typeid}},{transaction:t});
     
            await  t.commit();
-             
-        await  ctx.redirect("./lookMenu?id="+fields.typeid);//redirect不能传中文
-
+             ctx.body=0;
+             //console.log("FFFFFFFFFFFF");
+       // await  ctx.redirect("./lookMenu?id="+fields.typeid);//redirect不能传中文
+           
    }catch(err){
     console.log(err);
     t.rollback();

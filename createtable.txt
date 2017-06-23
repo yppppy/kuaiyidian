@@ -65,19 +65,29 @@ insert into shoptypes set typename='其他';
 
 /*菜单分类表*/
 
-
-
-
-
-
 create table menus(
-id bigint not null auto_increment primary key,
-shopid bigint not null,
-typename varchar(60) not null,
-num int not null default 0,
+   id bigint not null auto_increment primary key,
+   shopid bigint not null,
+    typename varchar(60) not null,
+    num int not null default 0,
+    unique key shopmenuuniq (shopid,typename)
+    )ENGINE=innodb DEFAULT CHARSET=utf8;
 
-)ENGINE=myisam DEFAULT CHARSET=utf8; 
 
+ create table childmenus(        /*商品信息*/
+   id bigint not null auto_increment primary key,
+    shopid bigint not null,
+     typeid bigint not null,
+    menusname varchar(120) not null,
+    menusimg varchar(120) not null,/*商品图片*/
+   menusintro varchar(480) not null,
+ currentprice decimal(5,2) not null,
+ costprice decimal(5,2) not null,
+  praise int not null default 0,
+     updtime timestamp not null,
+    createtime timestamp not null,
+      unique key shopmenuuniq (shopid,typeid,menusname)
+   )ENGINE=innodb DEFAULT CHARSET=utf8;
 /*消费者表*/
 /*消费者表*/
 
@@ -94,30 +104,7 @@ num int not null default 0,
 /*外送组合表*/
 
 
-create table menus(
-   id bigint not null auto_increment primary key,
-   shopid bigint not null,
-    typename varchar(60) not null,
-    num int not null default 0,
-    unique key shopmenuuniq (shopid,typename)
-    )ENGINE=innodb DEFAULT CHARSET=utf8;
 
-
-mysql> create table childmenus(        /*商品信息*/
-   id bigint not null auto_increment primary key,
-    shopid bigint not null,
-     typeid bigint not null,
-    menusname varchar(120) not null,
-    menusimg varchar(120) not null,/*商品图片*/
-   menusintro varchar(480) not null,
- currentprice decimal(5,2) not null,
- costprice decimal(5,2) not null,
-  praise int not null default 0,
-     updtime timestamp not null,
-    createtime timestamp not null,
-      unique key shopmenuuniq (shopid,typeid,menusname)
-
-   )ENGINE=innodb DEFAULT CHARSET=utf8;
 
 
 

@@ -1,22 +1,25 @@
 
-<% include ./head %>
-        <div class="row"  >
-          <div class="col-sm-2"></div>
-        
-          <div class="col-sm-9" style='text-align: center;'>
-          <!------------------------------------------------------>
-            <div id='clerkhead' style='width:80%;height:30px;border:1px solid #000000;text-align: center'>
-  <%-typename%>分类管理
-</div>
-<div class="row" style="margin-top: 9px">
-          <div class="col-sm-2"></div>
-          <div class="col-sm-2">
-            <input type="button" class="btn btn-primary" value='添加<%-typename%>'  data-toggle="modal" data-target="#myModal"/>
-          </div>
-          <div class="col-sm-7"></div>
-</div>
+<script>
+function addDish(typeid){
+  alert(typeid);
+  childmenuForm.typeid.value=typeid;
+  // dishForm.reset();
+  // dishForm.formBtn.value='创建';
+   $('#dishModal').modal('show');
+}
+function updDish(thisa,dishId){
+  tds=$(thisa).parent().parent().children();
+  dishForm.dishname.value=tds[1].innerText;
+  dishForm.price.value = tds[2].innerText;
+  dishForm.formBtn.value='修改';
+    $('#dishModal').modal('show');
+  }
+</script>
+
+            <input type="button" class="btn btn-primary" value='添加菜品'  onclick="addDish(<%-typeid%>)" />
+         
 <table class="table table-hover" align="center">
-  <caption>食品列表</caption>
+  
   <thead>
     <tr>
       <td>类别</td>
@@ -44,30 +47,53 @@
 <!-- 模态框（Modal） -->
 <script>
   function onAddClerk(){
-    return true;
+     $.ajax({
+              url: "./addChildMenu",
+              type: "POST",
+              data: $("$childmenuForm")[0],
+              contentType: false,
+              /**
+                  *必须false才会自动加上正确的Content-Type
+                  */
+                  contentType: false,
+                  /**
+                  * 必须false才会避开jQuery对 formdata 的默认处理
+                  * XMLHttpRequest会对 formdata 进行正确的处理
+                  */
+                  processData: false,
+                  success: function (data) {
+                    alert("JJJJJJJJJJJJJ");
+                      if(data==0){
+           alert("JJJJJJcccccccc");
+                        typeid=childmenuForm.typeid.value;
+                        $('#t'+typeid+' td').load('./lookMenu?id='+typeid);
+                        num = $('#n'+typeid).text();
+                        $('#n'+typeid).text(parseInt(num)+1);
+                        $('#dishModal').modal('hide');
+                      }
+                  },
+                  error: function () {
+                      alert("上传失败！");
+                  }
+        });
+    return false;
   }
 
 
 </script>
-<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"  style="width: 80%; margin: auto; ">
+<div class="modal fade" id="dishModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"  style="width: 80%; margin: auto; ">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-               <h4 class="modal-title" id="myModalLabel">添加<%-typename%></h4>
+               <h4 class="modal-title" id="myModalLabel">添加菜品</h4>
             </div>
             <div id='mbody' class="modal-body" style="width: 100%;">
         
-        <form class="form-horizontal" name='childmenuForm' method='post' action='./addChildMenu' onsubmit='return onAddClerk()' enctype="multipart/form-data" >
+        <form class="form-horizontal" name='childmenuForm' id="childmenuForm" method='post' action='./addChildMenu' onsubmit='return onAddClerk()' enctype="multipart/form-data" >
 
-        <div class="form-group">
-            <label for="firstname" class="col-sm-2 control-label"> 食品类别</label>
-            <div class="col-sm-10">
-         <input type="text" class="form-control"  value="<%-typename%>" name='typename' readonly>
-          </div>
-          </div>
-       
-        <input type="hidden" class="form-control"  value="<%-typeid%>" name='typeid' >
+      
+        <input type="hidden" class="form-control"   name='typeid' >
             <div class="form-group">
             <label for="firstname" class="col-sm-2 control-label"> 食品名称</label>
             <div class="col-sm-10">
@@ -98,13 +124,13 @@
             </div>
           </div>
 
-           <div class="form-group">
+<!--            <div class="form-group">
             <label for="firstname" class="col-sm-2 control-label">食品介绍</label>
             <div class="col-sm-10">
                          <% include ueditor %>
             </div>
           </div>
-        
+         -->
           <div class="form-group">
             <div class="col-sm-offset-2 col-sm-10">
               <button type="submit" class="btn btn-default">添加</button>

@@ -1,4 +1,29 @@
 <% include ./head %>
+
+<!-- 模态框（Modal） -->
+<script>
+  function onAddClerk(){
+    return true;
+  }
+  var arr=['','服务员','后厨'];
+  function roleChange(thisa){
+    clerkForm.nicheng.value=arr[thisa.value];
+  }
+  //-----显示菜品管理----------------------
+  function dishes(typeid){
+  
+    $('#t'+typeid).toggle(function(){
+      if(this.style.display==''){
+        //dishForm.menuid.value=typeid;
+      
+        $('#t'+typeid+' td').load('/shop/lookMenu?id='+typeid);
+      }
+      
+    });
+    
+  }
+</script>
+
         <div class="row"  >
           <div class="col-sm-2"></div>
         
@@ -26,27 +51,22 @@
   <tbody>
     <% rs.forEach(function(item){ %>
     <tr>
+    <%-item.id%>
       <td><%-item.typename%></td>
-      <td><a href='/shop/lookMenu?id=<%-item.id%>&name=<%-item.typename%>'>有<b style='color:red'><%-item.num%></b>种菜品</a></td>
+      <td><a href='#' onclick='dishes(<%-item.id%>)'>有<b id='n<%-item.id%>' style='color:red'><%-item.num%></b>种菜品</a></td>
       <td>
         <a href='#'>修改</a>&nbsp;
         <a href='#'>删除</a>
       </td>
     </tr>
+    <tr id='t<%-item.id%>' style='display:none'>
+      <td colspan="3" align="center"></td>
+    </tr>
     <% }) %>
   </tbody>
 </table>
 
-<!-- 模态框（Modal） -->
-<script>
-  function onAddClerk(){
-    return true;
-  }
-  var arr=['','服务员','后厨'];
-  function roleChange(thisa){
-    clerkForm.nicheng.value=arr[thisa.value];
-  }
-</script>
+
 <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">

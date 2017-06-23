@@ -12,7 +12,8 @@ var ChildMenuModel = sequelize.define('childmenus', {
 	costprice: Sequelize.DECIMAL,
     praise: Sequelize.INTEGER,
     updtime:Sequelize.DATE,
-    createtime:Sequelize.DATE
+    createtime:Sequelize.DATE,
+    putaway :Sequelize.INTEGER,
 },{
         timestamps: false,
         //paranoid: true  //获取不到id的返回值
