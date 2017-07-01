@@ -48,15 +48,22 @@ router.post('/login', async (ctx, next) => {
 router.post('/mobileLogin', async function (ctx, next) {
       console.log("HHHHHHHHHHHHH");
       let rs = await shopUser.findOne({where:{email:ctx.request.body.email,pwd:ctx.request.body.pwd}});
-      if(rs){
+      console.log(rs);
+       if(rs){
+    
+     let sql = 'select shopname from shops where id=?';
+      let shopRs = await sequelize.query(sql,{replacements: [rs.shopid]});
+          if(shopRs){
+            console.log(shopRs);
           let loginbean = new Object();
-      loginbean.id = rs.id;
-      loginbean.nicheng = rs.nicheng;
+        loginbean.id = rs.id;
+       loginbean.nicheng = rs.nicheng;
       loginbean.shoprole = rs.role;
       loginbean.shopid = rs.shopid;
+      loginbean.shopname = shopRs[0][0].shopname;
       ctx.session.loginbean=loginbean;
-      ctx.body=1;
-      //ctx.redirect('./');
+      ctx.body="1,"+loginbean.shopname+','+loginbean.shoprole;
+   }
       }else{
           ctx.body=0;
       }
@@ -170,9 +177,10 @@ router.get('/lookMenu', async function (ctx, next) {
   let loginbean = ctx.session.loginbean;
 console.log("DDDDDDDDDD");
   if(typeof(loginbean.shoprole)!='undefined'&&loginbean.shoprole==0){
-  	  let sql="select * from childmenus as c,menus as m  where c.shopid=? and m.id=? and c.typeid=m.id";
-	  let rs = await sequelize.query(sql,{replacements: [loginbean.shopid,ctx.query.id],type: sequelize.QueryTypes.QUERY});
-	  await ctx.render('shop/childmenu', {rs:rs[0],typeid:ctx.query.id});
+  	 
+	 let rs = await ChildMenuModel.findAll({where:{typeid:ctx.query.id,shopid:loginbean.shopid}});
+    console.log(rs);
+    await ctx.render('shop/childmenu', {rs:rs,typeid:ctx.query.id});
   }else{
   	ctx.redirect('/');
   }
@@ -197,11 +205,16 @@ router.post('/addChildMenu', async (ctx, next) => {
             console.log(err); 
             return;
         } 
-        fields.menusintro=fields.editorValue;
+       // fields.menusintro=fields.editorValue;
        fields.shopid=loginbean.shopid;
-       fields.menusimg=files.menusimg.path.replace('public','');
        fields.createtime=new Date();
+        if(files.menusimg){//上传了图片
+       fields.menusimg=files.menusimg.path.replace('public','');
+     }else{//没上传，设置默认图
+      fields.menusimg="/images/menu/aa.jpg"
+     }
        resolve(fields);
+    
       });
  });
 
@@ -212,10 +225,11 @@ router.post('/addChildMenu', async (ctx, next) => {
      await ChildMenuModel.create(fields, {transaction: t});
           
     await   MenuModel.update({num:sequelize.literal('num+1')},{where:{'shopid':loginbean.shopid,id:fields.typeid}},{transaction:t});
-    
+     
            await  t.commit();
-             ctx.body=0;
-             //console.log("FFFFFFFFFFFF");
+            console.log("ddddddddddddddddddddd");
+            ctx.body=0;
+             console.log("FFFFFFFFFFFF");
        // await  ctx.redirect("./lookMenu?id="+fields.typeid);//redirect不能传中文
            
    }catch(err){
@@ -235,6 +249,106 @@ router.post('/addChildMenu', async (ctx, next) => {
   }
       
         });    
+
+router.get('/upStatus', async function (ctx, next) {
+  let loginbean = ctx.session.loginbean;
+console.log("DDDDDDDDDD");
+  if(typeof(loginbean.shoprole)!='undefined'&&loginbean.shoprole==0){
+     console.log(ctx.query.putaway);
+   let rs = await ChildMenuModel.update({putaway:ctx.query.putaway},{where:{id:ctx.query.id,shopid:loginbean.shopid}});
+    console.log(rs);
+    if(rs[0]==1){//更新成功
+    ctx.body=1;
+      }else{
+         ctx.body=0; 
+      }
+      
+  }else{
+    ctx.redirect('/');
+  }
+  
+});
+
+
+
+
+router.post('/updChildMenu', async (ctx, next) => {
+  console.log("JJJJJJJJJJ");
+  let loginbean = ctx.session.loginbean;
+  
+    if((typeof(loginbean.shoprole)!='undefined')&&loginbean.shoprole==0){
+  
+  var form = new formidable.IncomingForm();   //创建上传表单 
+    form.encoding = 'utf-8';        //设置编辑 
+    form.uploadDir = './public/images/menu/';     //设置上传目录 文件会自动保存在这里 
+    form.keepExtensions = true;     //保留后缀 
+    form.maxFieldsSize = 5 * 1024 * 1024 ;   //文件大小5M 
+    let fields=await new Promise(function (resolve,reject){
+    form.parse(ctx.req, function (err, fields, files) { 
+        if(err){ 
+            console.log(err); 
+            return;
+        } 
+     
+       fields.shopid=loginbean.shopid;
+       fields.createtime=new Date();
+
+    if(files.menusimg){//更新了图片
+      console.log("rrrrrrrrrrrrruuyluj.,y");
+       fields.menusimg=files.menusimg.path.replace('public','');
+     }
+       
+       resolve(fields);
+      });
+ });
+
+     try{
+      if(fields.menusimg!='undefined'){
+          console.log("上传");
+      let updrs = await ChildMenuModel.update(fields,{where:{'id':fields.dishid,shopid:fields.shopid}});
+     
+    }else{
+      console.log("没上传");
+      let sql="update  childmenus set menusname=?,currentprice=?  where id=? ";
+   let updrs = await sequelize.query(sql,{replacements: [fields.menusname,fields.currentprice,fields.dishid],type: sequelize.QueryTypes.UPDATE});
+      
+    }
+     ctx.body=0;
+    }catch(err){
+        console.log(err);
+        ctx.body=1;
+    }
+  
+        }else{
+    ctx.redirect('/');
+  }
+      
+        });    
+
+
+
+
+
+router.get('/getMenu', async function (ctx, next) {
+  let loginbean = ctx.session.loginbean;
+  if((typeof(loginbean.shoprole)!='undefined')){
+    console.log(loginbean.shopid);
+      let menuRs = await MenuModel.findAll({where:{shopid:loginbean.shopid}});
+     console.log(menuRs);
+      let menuId = menuRs[0].id;
+      let dishRs = await ChildMenuModel.findAll({where:{typeid:menuId}});
+      ctx.body=[menuRs,dishRs];
+    }
+});
+
+
+router.get('/logout', async function (ctx, next) {
+  let loginbean = ctx.session.loginbean;
+  
+  delete ctx.session.loginbean;
+  ctx.body=1;
+})
+
 
 
 module.exports = router

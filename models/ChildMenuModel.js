@@ -7,7 +7,6 @@ var ChildMenuModel = sequelize.define('childmenus', {
     typeid:Sequelize.INTEGER,
     menusname: Sequelize.STRING,
     menusimg: Sequelize.STRING,
-    menusintro: Sequelize.STRING,
      currentprice: Sequelize.DECIMAL,
 	costprice: Sequelize.DECIMAL,
     praise: Sequelize.INTEGER,
